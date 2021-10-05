@@ -16,6 +16,9 @@ public class FundTransferService {
 
 	@Autowired
 	AccountRepository repository;
+	
+	@Autowired
+	FundTransferNotificationServiceImpl notifyService;
 
 	public Transaction transferFund(Transaction transaction) {
 
@@ -55,6 +58,7 @@ public class FundTransferService {
 
 				transaction.setAccountList(accounts);
 				transaction.setAmount(amount);
+				notifyService.notifyAboutTransfer(from,"fund deducted"+amount);
 
 			}
 		} catch (Exception e) {

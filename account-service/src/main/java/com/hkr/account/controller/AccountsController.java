@@ -2,6 +2,8 @@ package com.hkr.account.controller;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,6 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/v1/accounts")
 @Slf4j
 public class AccountsController {
+	
+	private static Logger logger = LoggerFactory.getLogger(AccountsController.class);
+
 
  private final AccountsService accountsService;
  
@@ -39,7 +44,7 @@ this.accountsService = accountsService;
 
  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 public ResponseEntity<Object> createAccount(@RequestBody @Valid Account account) {
-//Logger.info("Creating account {}", account);
+	 logger.info("Creating account {}", account);
 
  try {
 this.accountsService.createAccount(account);
@@ -52,7 +57,7 @@ return new ResponseEntity<>(daie.getMessage(), HttpStatus.BAD_REQUEST);
 
  @GetMapping(path = "/{accountId}")
 public Account getAccount(@PathVariable String accountId) {
-//log.info("Retrieving account for id {}", accountId);
+	 logger.info("Retrieving account for id {}", accountId);
 return this.accountsService.getAccount(accountId);
 }
  
