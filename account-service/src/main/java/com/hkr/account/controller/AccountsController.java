@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hkr.account.exception.AccountNotFoundException;
 import com.hkr.account.exception.DuplicateAccountIdException;
+import com.hkr.account.exception.TransactionNotDoneException;
 import com.hkr.account.model.Account;
 import com.hkr.account.model.Transaction;
 import com.hkr.account.service.AccountsService;
@@ -56,13 +58,15 @@ return new ResponseEntity<>(daie.getMessage(), HttpStatus.BAD_REQUEST);
 }
 
  @GetMapping(path = "/{accountId}")
-public Account getAccount(@PathVariable String accountId) {
-	 logger.info("Retrieving account for id {}", accountId);
+public Account getAccount(@PathVariable String accountId) throws AccountNotFoundException {
+	 logger.info("Retrieving account for id {} ", accountId);
 return this.accountsService.getAccount(accountId);
 }
  
  @PostMapping("/transfer-fund")
- public Transaction transferFundFromAccountToAnotherAccount(@RequestBody Transaction transaction){
+ public Transaction transferFundFromAccountToAnotherAccount(@RequestBody Transaction transaction)
+		 throws TransactionNotDoneException {
+	 logger.info("Transactions triggered ", transaction.toString());
 
      return fundTransferService.transferFund(transaction);
 
