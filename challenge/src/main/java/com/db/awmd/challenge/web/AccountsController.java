@@ -22,11 +22,8 @@ import com.db.awmd.challenge.domain.Account;
 import com.db.awmd.challenge.exception.AccountNotFoundException;
 import com.db.awmd.challenge.exception.DuplicateAccountIdException;
 import com.db.awmd.challenge.service.AccountsService;
-import com.db.awmd.challenge.service.FundTransferService;
 
 import lombok.extern.slf4j.Slf4j;
-
-
 
 @RestController
 @RequestMapping("/v1/accounts")
@@ -34,17 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountsController {
 
 	private final AccountsService accountsService;
-	
-	private final Logger log = LoggerFactory.getLogger(AccountsController.class);
 
+	private final Logger log = LoggerFactory.getLogger(AccountsController.class);
 
 	@Autowired
 	public AccountsController(AccountsService accountsService) {
 		this.accountsService = accountsService;
 	}
 
-	@Autowired
-	private FundTransferService fundTransferService;
+	/*
+	 * @Autowired private FundTransferServiceImpl fundTransferServiceImpl;
+	 */
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> createAccount(@RequestBody @Valid Account account) {
@@ -66,30 +63,31 @@ public class AccountsController {
 	}
 
 	@PostMapping("/transfer-fund")
-  public ResponseEntity<Account> transferFundBetweenAccounts(@RequestParam("sourceAccountId") String sourceAccountId,
+	public ResponseEntity<Account> transferFundBetweenAccounts(@RequestParam("sourceAccountId") String sourceAccountId,
 			@RequestParam("destAccountId") String destAccountId, @RequestParam("amount") BigDecimal transferAmount)
- 		 throws AccountNotFoundException {
-	  log.info("Transactions triggered ");
-	  
-	  Account destinationAccount=null;
-	  log.info("Inside transferAmountBetweenAccounts function");
+			throws AccountNotFoundException {
+		log.info("Transactions triggered ");
+
+		Account destinationAccount = null;
+		log.info("Inside transferAmountBetweenAccounts function");
 		// amount should not be negative
 		if (transferAmount.intValue() < 0) // deposit value is negative
 		{
 			throw new ArithmeticException("Transfer amount should not be negative" + transferAmount);
 		}
-        try {
-      	  destinationAccount=fundTransferService.transferFund(sourceAccountId, destAccountId, transferAmount);
-      	  if(destinationAccount==null) {
-      		  return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-      		  
-      	  }else {       		  
-      		  return ResponseEntity.ok().body(destinationAccount);
-      	  }
-      	  
-        }catch(Exception ex) {
-      	  ex.printStackTrace();
-      	  return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }            
+		try {
+			destinationAccount = accountsService.transferFund(sourceAccountId, destAccountId, transferAmount);
+			log.info("Destination Account :  "+destinationAccount);
+			if (destinationAccount == null) {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+			} else {
+				return ResponseEntity.ok().body(destinationAccount);
+				
+			}
+
+		} catch (Exception ex) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }

@@ -28,7 +28,8 @@ public class Accounts {
     @Column(name="acc_balance")
     private Double balance;
     
-    
+    public Accounts() {
+	}
 
     public Accounts(Long accId, String accType, String accHolderName, Double balance) {
 		super();
@@ -37,6 +38,7 @@ public class Accounts {
 		this.accHolderName = accHolderName;
 		this.balance = balance;
 	}
+    
 
 	public Long getAccId() {
         return accId;
