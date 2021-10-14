@@ -33,7 +33,7 @@ public class AccountsRepositoryInMemoryTest {
 	}
 
 	@Test
-	public void testCreate_Account() {
+	public void createAccount() {
 	
 		Account srcAccount = new Account("5");
 
