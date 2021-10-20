@@ -1,8 +1,6 @@
 package com.db.awmd.challenge;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -18,16 +16,16 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.db.awmd.challenge.domain.Account;
 import com.db.awmd.challenge.repository.AccountsRepositoryInMemory;
 import com.db.awmd.challenge.service.AccountsService;
-import com.db.awmd.challenge.web.AccountsController;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -44,10 +42,6 @@ public class AccountsControllerTest {
 
 	@Mock
 	private AccountsRepositoryInMemory acctReposObj;
-
-
-	@Autowired
-	private AccountsController accountsController;
 
 	@Before
 	public void prepareMockMvc() {
@@ -117,24 +111,20 @@ public class AccountsControllerTest {
 	}
 
 	@Test
-	// @DisplayName("Transfer_Between_Two_Accounts")
 	public void testTransferAmountBetweenAccounts() throws Exception {
 
 		// give
 		String srcAccountId = "1";
 		String destAccountId = "2";
-		Account srcAccount = new Account("1");
-		Account destAccount = new Account("2");
-		BigDecimal fundTransfer = new BigDecimal("1000.0000");
 
-		// when //then
-		when(acctReposObj.getAccount(srcAccountId)).thenReturn(srcAccount);
-		when(acctReposObj.getAccount(destAccountId)).thenReturn(destAccount);
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+				.post("/v1/accounts/transfer-fund?sourceAccountId=" + srcAccountId + "&destAccountId=" + destAccountId
+						+ "&amount=100.0")
+				.contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON)
+				.characterEncoding("UTF-8");
 
-		// assert
-		ResponseEntity<Account> resultAcc = accountsController.transferFundBetweenAccounts(srcAccountId, destAccountId,
-				fundTransfer);
-		assertEquals(new BigDecimal("1001.0000"), resultAcc.getBody().getBalance());
+		this.mockMvc.perform(builder).andExpect(status().isOk());
 
 	}
+
 }

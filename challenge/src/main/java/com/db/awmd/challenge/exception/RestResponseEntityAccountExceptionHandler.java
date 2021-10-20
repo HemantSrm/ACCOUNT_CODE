@@ -19,8 +19,6 @@ public class RestResponseEntityAccountExceptionHandler extends ResponseEntityExc
 
 		ErrorMessage errMessage = new ErrorMessage(HttpStatus.NOT_FOUND.value(), accException.getMessage());
 
-		// return new ResponseEntity.status(HttpStatus.NOT_FOUND).body(errMessage);
-
 		return new ResponseEntity<ErrorMessage>(errMessage, HttpStatus.NOT_FOUND);
 	}
 }

@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.db.awmd.challenge.domain.Account;
 import com.db.awmd.challenge.exception.AccountNotFoundException;
 import com.db.awmd.challenge.exception.DuplicateAccountIdException;
+import com.db.awmd.challenge.exception.FundNotAvailableException;
+import com.db.awmd.challenge.exception.RestResponseEntityAccountExceptionHandler;
 import com.db.awmd.challenge.service.AccountsService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +41,7 @@ public class AccountsController {
 		this.accountsService = accountsService;
 	}
 
-	/*
-	 * @Autowired private FundTransferServiceImpl fundTransferServiceImpl;
-	 */
+	 
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> createAccount(@RequestBody @Valid Account account) {
@@ -63,31 +63,28 @@ public class AccountsController {
 	}
 
 	@PostMapping("/transfer-fund")
-	public ResponseEntity<Account> transferFundBetweenAccounts(@RequestParam("sourceAccountId") String sourceAccountId,
+	public ResponseEntity<Object> transferFundBetweenAccounts(@RequestParam("sourceAccountId") String sourceAccountId,
 			@RequestParam("destAccountId") String destAccountId, @RequestParam("amount") BigDecimal transferAmount)
-			throws AccountNotFoundException {
+			throws AccountNotFoundException, FundNotAvailableException {
 		log.info("Transactions triggered ");
+		boolean transferStatus = false;  
 
-		Account destinationAccount = null;
 		log.info("Inside transferAmountBetweenAccounts function");
 		// amount should not be negative
 		if (transferAmount.intValue() < 0) // deposit value is negative
 		{
-			throw new ArithmeticException("Transfer amount should not be negative" + transferAmount);
+			throw new FundNotAvailableException("Insufficient Amount to Transfer :" + transferAmount);
 		}
-		try {
-			destinationAccount = accountsService.transferFund(sourceAccountId, destAccountId, transferAmount);
-			log.info("Destination Account :  "+destinationAccount);
-			if (destinationAccount == null) {
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			transferStatus = accountsService.transferFund(sourceAccountId, destAccountId, transferAmount);
+			log.info("transferStatus Account :  "+transferStatus);
+			if (transferStatus == false) {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fund Transfer Failed");
 
 			} else {
-				return ResponseEntity.ok().body(destinationAccount);
+				return ResponseEntity.status(HttpStatus.OK).body("Fund Transfer Success");
 				
 			}
 
-		} catch (Exception ex) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+		
 	}
 }

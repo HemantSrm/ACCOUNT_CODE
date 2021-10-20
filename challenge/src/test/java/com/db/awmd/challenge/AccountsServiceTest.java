@@ -21,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.db.awmd.challenge.domain.Account;
 import com.db.awmd.challenge.exception.AccountNotFoundException;
 import com.db.awmd.challenge.exception.DuplicateAccountIdException;
+import com.db.awmd.challenge.exception.FundNotAvailableException;
 import com.db.awmd.challenge.repository.AccountsRepository;
 import com.db.awmd.challenge.repository.AccountsRepositoryInMemory;
 import com.db.awmd.challenge.service.AccountsService;
@@ -39,6 +40,8 @@ public class AccountsServiceTest {
 
 	@Mock
 	private AccountsRepository acctReposObj;
+	
+	private static boolean fundTransfer = false;
 
 	@Test
 	public void addAccount() throws Exception {
@@ -69,6 +72,7 @@ public class AccountsServiceTest {
 		
 
 		Map<String, Account> concurrentAccounts = new ConcurrentHashMap<>();
+		 
 
 		String srcAccountId = "1";
 		String destAccountId = "2";
@@ -76,7 +80,7 @@ public class AccountsServiceTest {
 		Account destAccount = new Account("2");
 		Account destModifiedAccount = new Account("2");
 		destModifiedAccount.setBalance(new BigDecimal("1001.0000"));
-		BigDecimal fund = new BigDecimal("1001.0000");
+		BigDecimal fund = new BigDecimal("100.0000");
 		// acctReposObj.setAccount();
 
 		// when //then
@@ -89,9 +93,9 @@ public class AccountsServiceTest {
 				for (int i = 1; i <= 3; i++) {
 
 					try {
-						Account	accModified = accountsService.transferFund(srcAccountId, destAccountId, fund);
-						concurrentAccounts.putIfAbsent(accModified.getAccountId(), accModified);
-					} catch (AccountNotFoundException e) {
+						fundTransfer	= accountsService.transferFund(srcAccountId, destAccountId, fund);
+						concurrentAccounts.putIfAbsent("2", destModifiedAccount);
+					} catch (AccountNotFoundException | FundNotAvailableException e) {
 						log.error(
 								"Exception Concurrency method e:"+e.getMessage());
 					}
@@ -111,9 +115,8 @@ public class AccountsServiceTest {
 		// assert
 
 		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())
-				.isEqualTo((new BigDecimal("1001.0000")));
-		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())
-				.isEqualTo(concurrentAccounts.get(destAccountId).getBalance());
+				.isEqualTo((new BigDecimal("1101.0000")));
+		assertEquals(true, fundTransfer);
 
 	}
 }
