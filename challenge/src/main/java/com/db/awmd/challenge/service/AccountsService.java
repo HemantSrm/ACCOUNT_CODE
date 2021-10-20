@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.db.awmd.challenge.domain.Account;
 import com.db.awmd.challenge.exception.AccountNotFoundException;
-import com.db.awmd.challenge.exception.FundNotAvailableException;
+import com.db.awmd.challenge.exception.InvalidFundException;
 import com.db.awmd.challenge.repository.AccountsRepository;
 
 import lombok.Getter;
@@ -43,11 +43,11 @@ public class AccountsService {
 	}
 
 	public boolean  transferFund(String sourceAccountId, String destinationAccountId, BigDecimal transferAmount)
-			throws AccountNotFoundException, FundNotAvailableException {
+			throws AccountNotFoundException, InvalidFundException {
 		
 		logger.debug("Inside transferFund method");
 
-		repository.setAccount();
+		//repository.setAccount();
 		Account sourceAccount = repository.getAccount(sourceAccountId);
 		Account destinationAccount = repository.getAccount(destinationAccountId);
 		boolean transferFund = false;
@@ -74,7 +74,7 @@ public class AccountsService {
 
 					logger.info("Balance amount should not be lees than amount{} ", transferAmount);
 					
-					throw new FundNotAvailableException(
+					throw new InvalidFundException(
 							"Insufficient Amount to Transfer :" + repository.getAccount(sourceAccountId).getBalance());
 
 				}

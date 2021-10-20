@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.db.awmd.challenge.domain.Account;
 import com.db.awmd.challenge.exception.AccountNotFoundException;
 import com.db.awmd.challenge.exception.DuplicateAccountIdException;
-import com.db.awmd.challenge.exception.FundNotAvailableException;
+import com.db.awmd.challenge.exception.InvalidFundException;
 import com.db.awmd.challenge.repository.AccountsRepository;
 import com.db.awmd.challenge.repository.AccountsRepositoryInMemory;
 import com.db.awmd.challenge.service.AccountsService;
@@ -37,6 +37,10 @@ public class AccountsServiceTest {
 
 	@Autowired
 	private AccountsRepositoryInMemory accountsRepositoryInMemoryObj;
+	
+	@Autowired
+	private AccountsRepository repository;
+
 
 	@Mock
 	private AccountsRepository acctReposObj;
@@ -70,7 +74,7 @@ public class AccountsServiceTest {
 	@Test
 	public void testTransferAmountBetweenAccounts() throws AccountNotFoundException {
 		
-
+		repository.setAccount();
 		Map<String, Account> concurrentAccounts = new ConcurrentHashMap<>();
 		 
 
@@ -88,6 +92,75 @@ public class AccountsServiceTest {
 		Mockito.when(acctReposObj.getAccount(destAccountId)).thenReturn(destAccount);
 
 		/* Multiple thread executing transfer function */
+		Thread t1 = new Thread(new Runnable() {
+			public void run() {
+				for (int i = 1; i <= 100; i++) {
+
+					try {
+						fundTransfer	= accountsService.transferFund(srcAccountId, destAccountId, fund);
+						concurrentAccounts.putIfAbsent("2", destModifiedAccount);
+					} catch (AccountNotFoundException | InvalidFundException e) {
+						log.error(
+								"Exception Concurrency method e:"+e.getMessage());
+					}
+
+				}
+			}
+		});
+		Thread t2 = new Thread(new Runnable() {
+			public void run() {
+				for (int i = 1; i <= 100; i++) {
+
+					try {
+						fundTransfer	= accountsService.transferFund(srcAccountId, destAccountId, fund);
+						concurrentAccounts.putIfAbsent("2", destModifiedAccount);
+					} catch (AccountNotFoundException | InvalidFundException e) {
+						log.error(
+								"Exception Concurrency method e:"+e.getMessage());
+					}
+
+				}
+			}
+		});
+		t1.start();
+		t2.start();
+		try {
+			t1.join();
+			t2.join();
+		} catch (InterruptedException e) {
+			log.error(
+					"Exception interrupted e:"+e.getMessage());
+			
+		}
+
+		// assert
+
+		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())
+				.isEqualTo((new BigDecimal("1901.0000")));
+		
+
+	}
+	
+	@Test
+	public void testTransferFundNotValid() throws AccountNotFoundException {
+		
+		repository.setAccount();
+		Map<String, Account> concurrentAccounts = new ConcurrentHashMap<>();
+		 
+
+		String srcAccountId = "1";
+		String destAccountId = "2";
+		Account srcAccount = new Account("1");
+		Account destAccount = new Account("2");
+		Account destModifiedAccount = new Account("2");
+		destModifiedAccount.setBalance(new BigDecimal("1001.0000"));
+		BigDecimal fund = new BigDecimal("10000.0000");
+
+		// when //then
+		Mockito.when(acctReposObj.getAccount(srcAccountId)).thenReturn(srcAccount);
+		Mockito.when(acctReposObj.getAccount(destAccountId)).thenReturn(destAccount);
+
+		/* Multiple thread executing transfer function */
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				for (int i = 1; i <= 3; i++) {
@@ -95,7 +168,7 @@ public class AccountsServiceTest {
 					try {
 						fundTransfer	= accountsService.transferFund(srcAccountId, destAccountId, fund);
 						concurrentAccounts.putIfAbsent("2", destModifiedAccount);
-					} catch (AccountNotFoundException | FundNotAvailableException e) {
+					} catch (AccountNotFoundException | InvalidFundException e) {
 						log.error(
 								"Exception Concurrency method e:"+e.getMessage());
 					}
@@ -112,6 +185,36 @@ public class AccountsServiceTest {
 			
 		}
 
+		// assert
+
+		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())
+				.isEqualTo((new BigDecimal("1001.0000")));
+		assertEquals(false, fundTransfer);
+
+	}
+	
+	@Test
+	public void testSingleThreadTransferFund() throws AccountNotFoundException, InvalidFundException {
+		
+		repository.setAccount();
+		
+		 
+
+		String srcAccountId = "1";
+		String destAccountId = "2";
+		Account srcAccount = new Account("1");
+		Account destAccount = new Account("2");
+		Account destModifiedAccount = new Account("2");
+		destModifiedAccount.setBalance(new BigDecimal("1001.0000"));
+		BigDecimal fund = new BigDecimal("100.0000");
+
+		// when //then
+		Mockito.when(acctReposObj.getAccount(srcAccountId)).thenReturn(srcAccount);
+		Mockito.when(acctReposObj.getAccount(destAccountId)).thenReturn(destAccount);
+
+
+						fundTransfer	= accountsService.transferFund(srcAccountId, destAccountId, fund);
+		
 		// assert
 
 		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())

@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.db.awmd.challenge.domain.Account;
+import com.db.awmd.challenge.repository.AccountsRepository;
 import com.db.awmd.challenge.repository.AccountsRepositoryInMemory;
 import com.db.awmd.challenge.service.AccountsService;
 
@@ -39,6 +40,9 @@ public class AccountsControllerTest {
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
+	
+	@Autowired
+	private AccountsRepository repository;
 
 	@Mock
 	private AccountsRepositoryInMemory acctReposObj;
@@ -112,19 +116,60 @@ public class AccountsControllerTest {
 
 	@Test
 	public void testTransferAmountBetweenAccounts() throws Exception {
-
-		// give
-		String srcAccountId = "1";
-		String destAccountId = "2";
-
+		repository.setAccount();
+	
 		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
-				.post("/v1/accounts/transfer-fund?sourceAccountId=" + srcAccountId + "&destAccountId=" + destAccountId
-						+ "&amount=100.0")
-				.contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON)
-				.characterEncoding("UTF-8");
+				.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("{\"srcAcctId\":\"1\",\"transferfund\":100.0000,\"destAcctId\":\"2\"}")
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8");
 
 		this.mockMvc.perform(builder).andExpect(status().isOk());
 
 	}
+	
+	  
+	  @Test
+	  public void testTransferAccountNotFound() throws Exception {
+
+		  repository.setAccount();
+		   
+		  MockHttpServletRequestBuilder builder =
+	              MockMvcRequestBuilders.put("/v1/amount/transfer-fund")
+	                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+	                                    .content("{\"srcAcctId\":\"4\",\"transferfund\":100.0000,\"destAcctId\":\"5\"}")
+	                                    .accept(MediaType.APPLICATION_JSON)
+	                                    .characterEncoding("UTF-8");
+	    
+	    this.mockMvc.perform(builder)
+	      .andExpect(status().isNotFound());  
+	  } 
+
+	  @Test
+	  public void testInvalidTransferAmount() throws Exception {
+		repository.setAccount();
+		
+		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+				.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("{\"srcAcctId\":\"1\",\"transferfund\"-100.0000,\"destAcctId\":\"2\"}")
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8");
+
+		this.mockMvc.perform(builder).andExpect(status().isBadRequest());
+	  }  
+	  
+	  @Test
+	  public void testInsufficientTransferAmount() throws Exception {
+
+		  repository.setAccount();
+			
+			MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+					.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
+	                .content("{\"srcAcctId\":\"1\",\"transferfund\":10000.0000,\"destAcctId\":\"2\"}")
+	                .accept(MediaType.APPLICATION_JSON)
+	                .characterEncoding("UTF-8");
+
+			this.mockMvc.perform(builder).andExpect(status().isBadRequest());
+	  }  
 
 }
