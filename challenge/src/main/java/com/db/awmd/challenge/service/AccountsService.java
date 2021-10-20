@@ -28,9 +28,6 @@ public class AccountsService {
 	@Getter
 	private final AccountsRepository accountsRepository;
 
-	public AccountsRepository getAccountsRepository() {
-		return accountsRepository;
-	}
 
 	@Autowired
 	public AccountsService(AccountsRepository accountsRepository) {

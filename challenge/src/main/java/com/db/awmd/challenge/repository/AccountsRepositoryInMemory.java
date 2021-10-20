@@ -40,7 +40,7 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
 		}
 	}
 
-	//used the map instead of H2 Db to store some of the account data
+	//Map used instead of H2 Db to store some of the account data 
 	@Override
 	public Map<String, Account> setAccount() {
 		Account acct1 = new Account("1");

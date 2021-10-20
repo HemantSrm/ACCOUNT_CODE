@@ -32,17 +32,12 @@ public class Account {
     this.balance = balance;
   }
 
-public BigDecimal getBalance() {
-	return balance;
-}
-
-public void setBalance(BigDecimal balance) {
-	this.balance = balance;
-}
-
-public String getAccountId() {
-	return accountId;
-}
-  
+	/*
+	 * public BigDecimal getBalance() { return balance; }
+	 * 
+	 * public void setBalance(BigDecimal balance) { this.balance = balance; }
+	 * 
+	 * public String getAccountId() { return accountId; }
+	 */
   
 }
