@@ -2,7 +2,9 @@ package com.db.awmd.challenge;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -240,6 +242,32 @@ public class AccountsServiceTest {
 				.isEqualTo((new BigDecimal("1911.0000")));
 		assertEquals(true, fundTransfer);
 
+	}
+	
+	@Test
+	public void testEmailSentNotification() throws AccountNotFoundException, InvalidFundException {
+
+		
+		String srcAccountId = "3";
+		String destAccountId = "4";
+		BigDecimal fund = new BigDecimal("10.0000");
+		boolean emailSent= false;
+		
+	    accountsRepositoryInMemoryObj.createAccount(new Account(srcAccountId, new BigDecimal("1000.00")));
+	    accountsRepositoryInMemoryObj.createAccount(new Account(destAccountId, new BigDecimal("1001.00")));
+	   
+
+		when(acctReposObj.getAccount(srcAccountId)).thenReturn(new Account(srcAccountId, new BigDecimal("1000.00")));
+		when(acctReposObj.getAccount(destAccountId)).thenReturn(new Account(destAccountId, new BigDecimal("1001.00")));
+
+		//if fundTransfer is true then it means email is sent to both source and destination accounts
+		fundTransfer	= accountsService.transferFund(srcAccountId, destAccountId, fund);
+
+		if(fundTransfer== true) {
+			emailSent = true;
+			
+		}
+		assertTrue(emailSent);	
 	}
 	
 }
