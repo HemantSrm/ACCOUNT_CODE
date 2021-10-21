@@ -1,6 +1,5 @@
 package com.db.awmd.challenge.repository;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,27 +37,6 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
 		if (accountToUpdate != null) {
 			accountToUpdate.setBalance(account.getBalance());
 		}
-	}
-
-	//Map used instead of H2 Db to store some of the account data 
-	@Override
-	public Map<String, Account> setAccount() {
-		Account acct1 = new Account("1");
-		acct1.setBalance(new BigDecimal("1000.0000"));
-		Account acct2 = new Account("2");
-		acct2.setBalance(new BigDecimal("1001.0000"));
-
-		Account acct3 = new Account("3");
-		acct3.setBalance(new BigDecimal("1002.0000"));
-		Account acct4 = new Account("4");
-		acct4.setBalance(new BigDecimal("1003.0000"));
-
-		accounts.put(acct1.getAccountId(), acct1);
-		accounts.put(acct2.getAccountId(), acct2);
-		accounts.put(acct3.getAccountId(), acct3);
-		accounts.put(acct4.getAccountId(), acct4);
-		return accounts;
-
 	}
 
 }

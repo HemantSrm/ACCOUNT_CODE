@@ -27,6 +27,8 @@ public class AccountsService {
 
 	@Getter
 	private final AccountsRepository accountsRepository;
+	
+	
 
 
 	@Autowired
@@ -46,8 +48,8 @@ public class AccountsService {
 			throws AccountNotFoundException, InvalidFundException {
 		
 		logger.debug("Inside transferFund method");
+		
 
-		//repository.setAccount();
 		Account sourceAccount = repository.getAccount(sourceAccountId);
 		Account destinationAccount = repository.getAccount(destinationAccountId);
 		boolean transferFund = false;

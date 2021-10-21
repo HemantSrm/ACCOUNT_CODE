@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,15 +46,36 @@ public class AccountsControllerTest {
 	private AccountsRepository repository;
 
 	@Mock
-	private AccountsRepositoryInMemory acctReposObj;
+	private AccountsRepositoryInMemory accountsRepositoryInMemoryObj;
 
+	/*
+	 * @Before public void prepareMockMvc() { this.mockMvc =
+	 * webAppContextSetup(this.webApplicationContext).build();
+	 * 
+	 * // Reset the existing accounts before each test.
+	 * accountsService.getAccountsRepository().clearAccounts(); }
+	 */
+	
 	@Before
-	public void prepareMockMvc() {
-		this.mockMvc = webAppContextSetup(this.webApplicationContext).build();
+	  public void prepareMockMvc() {
+	    this.mockMvc = webAppContextSetup(this.webApplicationContext).build();
 
-		// Reset the existing accounts before each test.
-		accountsService.getAccountsRepository().clearAccounts();
-	}
+	    // Reset the existing accounts before each test.
+	    accountsService.getAccountsRepository().clearAccounts();
+	    String sourceAccountId = "1";
+		String destAccountId = "2";
+		
+		Account srcAccount = repository.getAccount(sourceAccountId);
+	    Account destinationAccount = repository.getAccount(destAccountId);
+	    
+	    if(Objects.isNull(srcAccount)) {
+	    	repository.createAccount(new Account(sourceAccountId, new BigDecimal("1000.00")));
+	    }
+	    if(Objects.isNull(destinationAccount)) {	    	
+	    	repository.createAccount(new Account(destAccountId, new BigDecimal("1001.00")));
+	    }
+	    
+	  }
 
 	@Test
 	public void createAccount() throws Exception {
@@ -116,13 +138,14 @@ public class AccountsControllerTest {
 
 	@Test
 	public void testTransferAmountBetweenAccounts() throws Exception {
-		repository.setAccount();
-	
+		 
+			
 		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
 				.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content("{\"srcAcctId\":\"1\",\"transferfund\":100.0000,\"destAcctId\":\"2\"}")
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("UTF-8");
+		
 
 		this.mockMvc.perform(builder).andExpect(status().isOk());
 
@@ -131,23 +154,20 @@ public class AccountsControllerTest {
 	  
 	  @Test
 	  public void testTransferAccountNotFound() throws Exception {
+		  MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
+					.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
+	                .content("{\"srcAcctId\":\"111\",\"transferfund\"100.0000,\"destAcctId\":\"2\"}")
+	                .accept(MediaType.APPLICATION_JSON)
+	                .characterEncoding("UTF-8");
 
-		  repository.setAccount();
-		   
-		  MockHttpServletRequestBuilder builder =
-	              MockMvcRequestBuilders.put("/v1/amount/transfer-fund")
-	                                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-	                                    .content("{\"srcAcctId\":\"4\",\"transferfund\":100.0000,\"destAcctId\":\"5\"}")
-	                                    .accept(MediaType.APPLICATION_JSON)
-	                                    .characterEncoding("UTF-8");
 	    
 	    this.mockMvc.perform(builder)
-	      .andExpect(status().isNotFound());  
+	      .andExpect(status().isBadRequest());  
 	  } 
 
 	  @Test
 	  public void testInvalidTransferAmount() throws Exception {
-		repository.setAccount();
+		
 		
 		MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
 				.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -161,7 +181,7 @@ public class AccountsControllerTest {
 	  @Test
 	  public void testInsufficientTransferAmount() throws Exception {
 
-		  repository.setAccount();
+		  //setAccount();
 			
 			MockHttpServletRequestBuilder builder = MockMvcRequestBuilders
 					.post("/v1/accounts/transfer-fund").contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -171,5 +191,7 @@ public class AccountsControllerTest {
 
 			this.mockMvc.perform(builder).andExpect(status().isBadRequest());
 	  }  
+	  
+	
 
 }

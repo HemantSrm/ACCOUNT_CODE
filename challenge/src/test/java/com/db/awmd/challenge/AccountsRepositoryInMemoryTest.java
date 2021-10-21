@@ -25,7 +25,6 @@ public class AccountsRepositoryInMemoryTest {
 	@Before
 	public void setUp() throws Exception {
 
-		acctReposObjInMemory.setAccount();
 	}
 
 	@Test
@@ -40,6 +39,7 @@ public class AccountsRepositoryInMemoryTest {
 	@Test
 	public void getAccountId() {
 		String sourceAccountId = "1";
+		acctReposObjInMemory.createAccount(new Account(sourceAccountId, new BigDecimal("1000.00")));
 
 		Account accountObj = acctReposObjInMemory.getAccount(sourceAccountId);
 		;

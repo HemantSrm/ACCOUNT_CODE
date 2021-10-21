@@ -6,8 +6,10 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -70,11 +72,29 @@ public class AccountsServiceTest {
 		}
 
 	}
+	
+	@Before
+	public void setUp() throws Exception {
+
+		String sourceAccountId = "1";
+		String destAccountId = "2";
+		Account srcAccount = accountsRepositoryInMemoryObj.getAccount(sourceAccountId);
+	    Account destinationAccount = accountsRepositoryInMemoryObj.getAccount(destAccountId);
+	    
+	    if(Objects.isNull(srcAccount)) {
+	    	accountsRepositoryInMemoryObj.createAccount(new Account(sourceAccountId, new BigDecimal("1000.00")));
+	    }
+	    if(Objects.isNull(destinationAccount)) {	    	
+	    	accountsRepositoryInMemoryObj.createAccount(new Account(destAccountId, new BigDecimal("1001.00")));
+	    }
+
+	}
+
 
 	@Test
 	public void testTransferAmountBetweenAccounts() throws AccountNotFoundException {
 		
-		repository.setAccount();
+		
 		Map<String, Account> concurrentAccounts = new ConcurrentHashMap<>();
 		 
 
@@ -85,7 +105,7 @@ public class AccountsServiceTest {
 		Account destModifiedAccount = new Account("2");
 		destModifiedAccount.setBalance(new BigDecimal("1001.0000"));
 		BigDecimal fund = new BigDecimal("100.0000");
-		// acctReposObj.setAccount();
+		
 
 		// when //then
 		Mockito.when(acctReposObj.getAccount(srcAccountId)).thenReturn(srcAccount);
@@ -144,7 +164,7 @@ public class AccountsServiceTest {
 	@Test
 	public void testTransferFundNotValid() throws AccountNotFoundException {
 		
-		repository.setAccount();
+		
 		Map<String, Account> concurrentAccounts = new ConcurrentHashMap<>();
 		 
 
@@ -188,7 +208,7 @@ public class AccountsServiceTest {
 		// assert
 
 		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())
-				.isEqualTo((new BigDecimal("1001.0000")));
+				.isEqualTo((new BigDecimal("1911.0000")));
 		assertEquals(false, fundTransfer);
 
 	}
@@ -196,7 +216,6 @@ public class AccountsServiceTest {
 	@Test
 	public void testSingleThreadTransferFund() throws AccountNotFoundException, InvalidFundException {
 		
-		repository.setAccount();
 		
 		 
 
@@ -206,7 +225,7 @@ public class AccountsServiceTest {
 		Account destAccount = new Account("2");
 		Account destModifiedAccount = new Account("2");
 		destModifiedAccount.setBalance(new BigDecimal("1001.0000"));
-		BigDecimal fund = new BigDecimal("100.0000");
+		BigDecimal fund = new BigDecimal("10.0000");
 
 		// when //then
 		Mockito.when(acctReposObj.getAccount(srcAccountId)).thenReturn(srcAccount);
@@ -218,8 +237,9 @@ public class AccountsServiceTest {
 		// assert
 
 		assertThat(accountsRepositoryInMemoryObj.getAccount(destAccountId).getBalance())
-				.isEqualTo((new BigDecimal("1101.0000")));
+				.isEqualTo((new BigDecimal("1911.0000")));
 		assertEquals(true, fundTransfer);
 
 	}
+	
 }

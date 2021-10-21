@@ -73,6 +73,11 @@ public class AccountsController {
 		{
 			throw new InvalidFundException("Invalid Amount to Transfer :" + accountDto.getTransferfund());
 		}
+		
+		if (accountDto.getSrcAccId()== null || accountDto.getDestAcctId()== null)
+		{
+			throw new AccountNotFoundException("Account Id not found");
+		}
 			transferStatus = accountsService.transferFund(accountDto.getSrcAccId(), accountDto.getDestAcctId(), accountDto.getTransferfund());
 			log.info("transferStatus Account :  "+accountDto.getTransferfund());
 			if (transferStatus == false) {
